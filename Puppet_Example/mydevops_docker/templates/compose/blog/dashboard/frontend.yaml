@@ -1,0 +1,8 @@
+version: '3'
+name: frontend
+services:
+  frontend:
+    restart: always
+    image: gitlab-registry.mydevops.com/blog/dashboard/frontend:latest
+    ports:
+      - 5777:5777

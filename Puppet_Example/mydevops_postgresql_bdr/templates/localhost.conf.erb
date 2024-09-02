@@ -1,0 +1,12 @@
+[localhost]
+description = "localhost"
+conninfo = host=localhost user=backups password=da***** dbname=postgres
+ssh_command = ssh postgres@localhost
+backup_method = rsync
+parallel_jobs = 1
+compression = gzip
+post_backup_script = gzip -r $BARMAN_BACKUP_DIR/
+reuse_backup = copy
+archiver = on
+retention_policy = RECOVERY WINDOW OF 1 WEEKS
+backup_options = concurrent_backup

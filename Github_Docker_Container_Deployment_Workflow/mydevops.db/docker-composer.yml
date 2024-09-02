@@ -1,0 +1,28 @@
+version: '3'
+networks:
+  hfnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/24
+services:
+
+  db:
+    container_name: mydevops-db
+    image: ebenezeryeshua/mydevops-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ******
+      MYSQL_DATABASE: mydevops
+      MYSQL_USER: mydevops
+      MYSQL_PASSWORD: *****
+    volumes:
+      - ehyeh-db-data:/var/lib/mysql
+      - /data/docker/volumes/mydevops-dbdump/_data/:/docker-entrypoint-initdb.d
+    networks:
+        hfnet:
+          ipv4_address: 172.18.0.5
+    ports:
+      - "3307:3307"
+volumes:
+  mydevops-db-data:

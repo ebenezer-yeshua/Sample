@@ -1,0 +1,23 @@
+name: Mydevops Actions 
+run-name: ${{ github.actor }} is production Mydevops Actions 
+on: [push]
+jobs:
+  Explore-Mydevops-Actions:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
+      - uses: actions/checkout@v3
+      - name: rsync deployments
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete -og --chown=www-data:www-data
+          path: ./
+          remote_path: /data/docker/volumes/production_mydevops-web-data/_data/html/
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_port: ${{ secrets.SSH_PORT}}
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: List files in the repository
+        run: |
+          ls ${{ github.workspace }}
+      - run: echo "This job's status is ${{ job.status }}."

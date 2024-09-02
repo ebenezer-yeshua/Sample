@@ -1,0 +1,637 @@
+version: '3.7'
+
+
+services:
+  api-ca:
+    image: hub.mydevops.com/provisioning/api-ca:v1.2
+    environment:
+      MYSQL_DATABASE_USER: 'provision'
+      MYSQL_DATABASE_PASSWORD: '********'
+      MYSQL_DATABASE_HOST: 'provisioning1-virt-ewr1.mydevops.app'
+      MYSQL_DATABASE: 'provisioning'
+      FLASK_ENV: 'production'
+      ENCRYPT_KEY: '*******'
+    ports:
+      - 127.0.0.1:5000:5000
+    restart: always
+    networks:
+      - provisioning
+    volumes:
+      - /shared/api-ca:/api
+  cloud-service:
+    image: registry.docker-eu.mydevops.com/provisioning/cloud-service:1.96.3
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    networks:
+      - provisioning
+    links:
+      - mqtt
+      - memcached
+    depends_on:
+      - mqtt
+      - memcached
+    environment:
+      DEBUG: "*"
+      ## enables the cote discover via redis
+      COTE_DISCOVERY_REDIS_HOST: 'redis'
+      COTE_DISCOVERY_REDIS_PORT: '6379'
+      ## kafka host + port
+      KAFKA_HOST: 'kafka:9092'
+      ## kafka client group and topic
+      KAFKA_LEGACY_MMS_CLIENT_ID: 'LegacyMMS'
+      KAFKA_LEGACY_MMS_GROUP_ID: 'LegacyMMS'
+      KAFKA_LEGACY_MMS_TOPIC: 'LegacyMMS'
+      COTE_REQUEST_TIMEOUT: 300000
+      KAFKA_SESSION_TIMEOUT: 120000
+      # mysql creds
+      DATABASE_NAME: 'provisioning'
+      DATABASE_USER: 'provision'
+      DATABASE_PASS: '******'
+      DATABASE_HOST: '10.0.1.14'
+      DATABASE_PORT: '3306'
+      UPDATE_PROVISIONING_URL: 'https://cloud.mydevops.com/cloud-action-provisioning-driver/api/v1/cloud-action'
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  controller-service:
+    image: registry.docker-eu.mydevops.com/provisioning/controller-service:1.97.1
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    environment:
+      CONTROLLER_MASS_ASSIGN_HASH_KEY: '923dd8258c44516e3e1a7ffd2b94b81f'
+      ## enables the cote discover via redis
+      COTE_DISCOVERY_REDIS_HOST: 'redis'
+      COTE_DISCOVERY_REDIS_PORT: '6379'
+      PORT: 3000
+      ## self address should be the request dispatcher endpoint
+      SELF_ADDRESS: 'https://req-disp-at0m.mios.com/'
+      ## kafka host name only
+      KAFKA_ADVERTISED_HOST_NAME: 'kafka'
+      ## kafka port only
+      KAFKA_ADVERTISED_PORT: '9092'
+      LOG_LEVEL: 'debug'
+      ## kafka client group and topics
+      KAFKA_LEGACY_MMS_CLIENT_ID: 'LegacyMMS'
+      KAFKA_LEGACY_MMS_GROUP_ID: 'LegacyMMS'
+      KAFKA_LEGACY_MMS_TOPIC: 'LegacyMMS'
+      KAFKA_MASSASSIGN_TOPIC: 'ControllerService.MassAssignErrors'
+      COTE_REQUEST_TIMEOUT: '300000'
+      ## Database creds
+      DATABASE_NAME: 'provisioning'
+      DATABASE_USER: 'provision'
+      DATABASE_PASS: '******'
+      DATABASE_HOST: '10.0.1.14'
+      DATABASE_PORT: '3306'
+      ## legacy endpoints
+      SDA_HOST: 'https://provision1.mydevops.com'
+      MMS_HOST: 'https://vera-us-oem-authd11.mydevops.com'
+    links:
+      - mqtt
+      - memcached
+    depends_on:
+      - mqtt
+      - memcached
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  factory-service:
+    image: registry.docker-eu.mydevops.com/provisioning/factory-service:1.94.2
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    environment:
+      ## enables the cote discover via redis
+      COTE_DISCOVERY_REDIS_HOST: 'redis'
+      COTE_DISCOVERY_REDIS_PORT: '6379'
+      PORT: 3000
+      ## database creds
+      DATABASE_NAME: 'provisioning'
+      DATABASE_USER: 'provision'
+      DATABASE_PASS: '******'
+      DATABASE_HOST: '10.0.1.14'
+      DATABASE_PORT: '3306'
+      COTE_REQUEST_TIMEOUT: '300000'
+    links:
+      - mqtt
+      - memcached
+    depends_on:
+      - mqtt
+      - memcached
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  order-service:
+    image: registry.docker-eu.mydevops.com/provisioning/order-service:1.94.2
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    environment:
+      ## enables the cote discover via redis
+      COTE_DISCOVERY_REDIS_HOST: 'redis'
+      COTE_DISCOVERY_REDIS_PORT: '6379'
+      PORT: 3000
+      ## self address should be the request dispatcher endpoint
+      SELF_ADDRESS: 'https://req-disp-at0m.mydevops.com/'
+      DATABASE_NAME: 'provisioning'
+      DATABASE_USER: 'provision'
+      DATABASE_PASS: '******'
+      DATABASE_HOST: '10.0.1.14'
+      DATABASE_PORT: '3306'
+      NODE_ENV: 'development'
+      COTE_REQUEST_TIMEOUT: '300000'
+    links:
+      - mqtt
+      - memcached
+    depends_on:
+      - mqtt
+      - memcached
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1024M
+        reservations:
+          cpus: '0.76'
+          memory: 700M
+#     logging:
+#       driver: gelf
+#       options:
+#         gelf-address: "udp://10.0.1.12:12401"
+#         tag: "provisioning-live-{{.Name}}"
+  ###!
+  request-dispatcher:
+    image: registry.docker-eu.mydevops.com/provisioning/request-dispatcher:1.97.1
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    environment:
+      ## enables the cote discover via redis
+      COTE_DISCOVERY_REDIS_HOST: 'redis'
+      COTE_DISCOVERY_REDIS_PORT: '6379'
+      # port where app runs
+      PORT: 3000
+      # if enabled it will show docs on /documentation
+      DISPLAY_SWAGGER_DOCS: 'true'
+      HOST_DOCUMENTATION: req-disp-factory.mydevops.com
+      NODE_ENV: 'production'
+      # database
+      DATABASE_NAME: 'provisioning'
+      DATABASE_USER: 'provision'
+      DATABASE_PASS: '******'
+      DATABASE_HOST: '10.0.1.14'
+      DATABASE_PORT: '3306'
+      MEMCACHED_PORT: '11211'
+      MEMCACHED_URL: 'memcached'
+      SELF_ADDRESS: 'req-disp.mydevops.com'
+      STACK_VERSION: '1'
+      COTE_REQUEST_TIMEOUT: '300000'
+    links:
+      - mqtt
+      - memcached
+    depends_on:
+      - mqtt
+      - memcached
+    expose:
+      - 3000
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1024M
+        reservations:
+          cpus: '1'
+          memory: 512M
+
+  ssl-generator-service:
+    image: registry.docker-eu.mydevops.com/provisioning/ssl-generator-service:885e855
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    environment:
+      PORT: 8080
+      ### !!this service is already up!
+      LOG_LEVEL: 'trace'
+      NODE_ENV: 'production'
+      OEM_UUID: 'a882e6ac-edbe-b776-4307-******'
+      OEM_ID: '1'
+      EXPOSE_DOCUMENTATION: "true"
+      VERIFY_CHAIN: "true"
+      VERSION: 2
+      CA_SERVICE_AUTH: "********"
+      ### ! REMOVE THIS LINE CA HAS PWD ON PROD!!
+      CA_HAS_PASSWORD: 'false'
+      COTE_REQUEST_TIMEOUT: '300000'
+#    ports:
+#      - '8080:8080'
+    expose:
+      - 8080
+    volumes:
+      - type: bind
+        source: /shared/ssl-generator/certificates/
+        target: /app/certificates/
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 1073741824
+#      - /shared/ssl-generator/certificates/:/app/certificates/
+#      - tmpfs:/tmp
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  setup-service:
+    image: registry.docker-eu.mios.com/provisioning/setup-service:1.94.2
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    environment:
+      ## enables the cote discover via redis
+      COTE_DISCOVERY_REDIS_HOST: 'redis'
+      COTE_DISCOVERY_REDIS_PORT: '6379'
+      PORT: 3000
+      # retries in kafka
+      RETRY_FAILED_GENERATIONS: 500
+      DATABASE_NAME: 'provisioning'
+      DATABASE_USER: 'provision'
+      DATABASE_PASS: 'Bz6zO2EP6oM0d7Xo4hDwwN0O'
+      DATABASE_HOST: '10.165.15.14'
+      DATABASE_PORT: '3306'
+      ## ssl generator addres from host and port
+      SSL_GENERATOR_HOST: 'ssl-generator-service:8080'
+      SSL_GENERATOR_PROTOCOL: 'http'
+      SSL_GENERATOR_VERSION: 2
+      KAFKA_HOST: 'kafka:9092'
+      KAFKA_LEGACY_MMS_CLIENT_ID: 'LegacyMMS'
+      KAFKA_LEGACY_MMS_GROUP_ID: 'LegacyMMS'
+      KAFKA_LEGACY_MMS_TOPIC: 'LegacyMMS'
+      CONSUMER_TOPIC: 'SetupService.SetupController'
+      CONSUMER_GROUP: 'consumer-group-1'
+      CONSUMER_CLIENT: 'my-app-1'
+      NODE_ENV: 'development'
+      ## ssl generator key
+      CA_SERVICE_AUTH: "*********"
+      COTE_REQUEST_TIMEOUT: '300000'
+    links:
+      - mqtt
+      - memcached
+    depends_on:
+      - mqtt
+      - memcached
+    volumes:
+      - /dev/urandom:/dev/random
+      - /app/node_modules/
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  redis:
+    image: redis:2.8.23
+    restart: always
+    hostname: redis
+    container_name: redis
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    expose:
+      - 6379
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  mqtt:
+    image: ncarlier/mqtt
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  memcached:
+    image: memcached:1.5-alpine
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+#    ports:
+#      - '11211:11211'
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+  
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+#    ports:
+#      - 8181:80
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+      MYSQL_USERNAME: 'root'
+      MYSQL_ROOT_PASSWORD: '*******'
+      PMA_HOST: '10.0.1.14'
+#      PMA_USER: 'root'
+#      PMA_PASSWORD: '******'
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 768M
+        reservations:
+          cpus: '1'
+          memory: 768M
+    networks:
+      - provisioning
+  
+  signfile:
+    image: "hub.mydevops.com/provisioning/sign-file:v2"
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+#    ports:
+#      - 5621:80
+    environment:
+      KEY: "******"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 768M
+        reservations:
+          cpus: '1.5'
+          memory: 512M
+    networks:
+      - provisioning
+    volumes:
+       - /shared/file-sign/cert.pem:/cert.pem
+       - /shared/file-sign/:/tmp/
+#      - /shared/ssl-generator/certificates/a882e6ac-edbe-b776-4307-def1da14cdf8/key.pem:/cert.pem:ro
+#       - /shared/ssl-generator/certificates/:/app/certificates/cert.pem:ro
+
+  timestamp-service:
+    image: hub.mydevops.com/provisioning/timestamp-service:885e855
+    restart: always
+#    build:
+#      context: ./containers/time-service/
+#      dockerfile: ./docker/prd.DockerFile
+#    volumes:
+#      - ./containers/time-service/source/:/app
+#      - /app/node_modules/
+    environment:
+      PORT: 8081
+      NODE_ENV: production
+      HOST_DOCUMENTATION: req-disp-at0m.mydevops.com
+      COTE_REQUEST_TIMEOUT: '300000'
+    expose:
+      - 8081
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  sta-sync-service:
+    image: registry.docker-eu.mydevops.com/provisioning/sta-sync-service:1.94.2
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    environment:
+      ## enables the cote discover via redis
+      COTE_DISCOVERY_REDIS_HOST: 'redis'
+      COTE_DISCOVERY_REDIS_PORT: '6379'
+      DATABASE_NAME: 'provisioning'
+      DATABASE_USER: 'provision'
+      DATABASE_PASS: 'Bz6zO2EP6oM0d7Xo4hDwwN0O'
+      DATABASE_HOST: '10.165.15.14'
+      DATABASE_PORT: '3306'
+      ## ssl generator addres from host and port
+      SSL_GENERATOR_HOST: 'ssl-generator-service:8080'
+      SSL_GENERATOR_PROTOCOL: 'http'
+      SSL_GENERATOR_VERSION: 2
+      KAFKA_HOST: 'kafka:9092'
+      NODE_ENV: 'production'
+      #STA_DEV_CONTROLLER: '47116603'
+      #SLEEP_REM: '1 */10 * * * *'
+      SLEEP_REM: '1 */3 * * * *'
+      # SLEEP_AWAKE: '*/55 * * * * *'
+      # changed on 2019 10 16 alecs@
+      SLEEP_AWAKE: '*/5 * * * * *'
+      ## ssl generator key
+      CA_SERVICE_AUTH: "*******"
+      ## sta endpoints and auth
+      STA_POST_ENDPOINT: 'https://sta2.mydevops.com/new-prov-sync.php'
+      STA_GET_ENDPOINT: 'https://sta2.mydevops.com/new-prov-sync.php'
+      STA_AUTH_HEADER_VALUE: '******'
+      SSL_GENERATOR__HTTP_RETRIES: 15
+      COTE_REQUEST_TIMEOUT: '300000'
+    volumes:
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 1073741824
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1512M
+        reservations:
+          cpus: '0.75'
+          memory: 768M
+
+  zookeeper:
+    image: bitnami/zookeeper:3.4.13-debian-9-r67
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+    hostname: zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+#    ports:
+#      - '2181:2181'
+#    expose:
+#       - 2181
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  kafka:
+    image: wurstmeister/kafka:2.12-2.2.1
+    logging:
+      driver: json-file
+      options:
+        max-size: 500M
+        max-file: 2
+#    ports:
+#      - '9092:9092'
+#    expose:
+#       - 9092
+#    ports:
+#       - target: 9092
+#         published: 9092
+#         protocol: tcp
+#         mode: host
+    hostname: kafka
+    environment:
+       HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
+       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT,CONTROLLER:PLAINTEXT
+       KAFKA_ADVERTISED_PROTOCOL_NAME: OUTSIDE
+       KAFKA_PROTOCOL_NAME: INSIDE
+       KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://_{HOSTNAME_COMMAND}:9094
+       KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094,CONTROLLER://:19092
+       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+       ##################################################
+       ## TO SCLAE EG. https://github.com/wurstmeister/kafka-docker/issues/416#issuecomment-435682103
+       KAFKA_LOG_RETENTION_BYTES: -1
+       KAFKA_LOG_RETENTION_DAYS: 90
+       KAFKA_LOG_RETENTION_HOURS: 2160
+       KAFKA_CLEANUP_POLICY: compact
+       # Required because of bugs in Kafka 0.11.0.0
+       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3000
+       ## auto scale partitions with minimum defined nr, in case of consumer sessions lost
+       #KAFKA_NUM_PARTITIONS: 20
+       #MIN_INSYNC_REPLICATION: 1
+       # https://stackoverflow.com/questions/40316862/the-group-coordinator-is-not-available-kafka
+       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+       #### #################################### to swarm!
+       KAFKA_BROKER_ID: 1
+       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+       KAFKA_CREATE_TOPICS: 'SetupService.SetupController:1:1,LegacyMMS:1:1,ControllerService.MassAssignErrors:1:1'
+       KAFKA_HEAP_OPTS: "-Xmx3072M -Xms3072M"
+    volumes:
+      - /shared/kafka/data:/kafka
+      - /shared/kafka/config:/opt/kafka/config
+    depends_on:
+      - zookeeper
+    networks:
+      - provisioning
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 4096M
+        reservations:
+          cpus: '2'
+          memory: 2560M
+
+networks:
+  provisioning:
+    driver: bridge

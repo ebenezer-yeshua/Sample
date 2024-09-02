@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mydevops-deployment
+  labels:
+    app: mydevops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mydevops
+  template:
+    metadata:
+      labels:
+        app: mydevops
+    spec:
+      containers:
+       - name: mydevops-pod
+         image: ebenezeryeshua/mydevops-app:latest
+         ports:
+         - containerPort: 3000
+         command:
+         - sleep
+         - "infinity"
+         volumeMounts:
+         - name: mydevops-pv-storage  
+           mountPath: /home/node
+      volumes:
+      - name: mydevops-pv-storage
+        persistentVolumeClaim:
+          claimName: mydevops-pv-claim

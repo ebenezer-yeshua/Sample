@@ -1,0 +1,3 @@
+#!/bin/sh
+/usr/bin/docker compose -f "/etc/compose/<%=@name%>.yaml" --ansi never <%= @compose_params %> pull 
+/usr/bin/docker compose -f "/etc/compose/<%=@name%>.yaml" --ansi never <%= @compose_params %> up --detach

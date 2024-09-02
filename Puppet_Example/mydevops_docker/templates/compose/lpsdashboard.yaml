@@ -1,0 +1,14 @@
+---
+version: "2.1"
+services:
+  lpsdashboard:
+    image: gitlab-registry.mydevops.com/my/dashboard/master:latest
+    network_mode: bridge
+    container_name: mydashboard
+    ports:
+      - 127.0.0.1:8080:8080
+    restart: always
+    volumes:
+      - mydb:/opt/payara/my
+volumes:
+  lpsdb:

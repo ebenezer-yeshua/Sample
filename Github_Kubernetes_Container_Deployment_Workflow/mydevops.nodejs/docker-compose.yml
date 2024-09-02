@@ -1,0 +1,22 @@
+version: '3'
+networks:
+  hfnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/24
+services:
+
+  nginx:
+    container_name: mydevops-app
+    image: ebenezeryeshua/mydevops-app
+    volumes:
+      - mydevops-app-data:/home/node/mydevops.in
+    networks:
+        hfnet:
+          ipv4_address: 172.18.0.7
+    ports:
+      - "3000:3000"
+volumes:
+  mydevops-app-data:

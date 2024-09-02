@@ -1,0 +1,9 @@
+version: '3'
+name: api
+services:
+  api:
+    restart: always
+    image: gitlab-registry.mydevops.com//blog/dashboard/api:latest
+    ports:
+      - 58089:58089
+    env_file: /etc/compose/db.env

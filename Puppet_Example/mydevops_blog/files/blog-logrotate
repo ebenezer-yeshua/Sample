@@ -1,0 +1,15 @@
+/home/sites/accounts.mydevops.com/log/Delayed_LitleSynchronizer.log
+/home/sites/accounts.mydevops.com/log/delayed_jobs_daemon.log
+/home/sites/accounts.mydevops.com/log/production.log
+{
+    rotate 12
+    weekly
+    postrotate
+	/bin/bash /root/log-sync.sh
+    endscript
+    missingok
+    dateext
+    copytruncate
+    notifempty
+    compress
+}

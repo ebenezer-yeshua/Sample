@@ -1,0 +1,4 @@
+standby_mode = 'on'
+primary_conninfo = 'host=''<%=@metapghost%>'' user=repmgr application_name=''<%=@pghost%>'' connect_timeout=2'
+restore_command = 'barman-cloud-wal-restore -P barman-cloud s3://<%=@s3name%> <%=@pgpath%> %f %p'
+recovery_target_timeline = 'latest'

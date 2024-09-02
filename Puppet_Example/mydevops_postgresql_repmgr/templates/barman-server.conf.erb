@@ -1,0 +1,5 @@
+[<%=@host%>]
+description = "<%=@host%>"
+ssh_command = ssh postgres@<%=@host%>
+conninfo = host=<%=@host%> user=backups password=<%=@password%> dbname=postgres
+retention_policy = "<%=@retention_policy%>"

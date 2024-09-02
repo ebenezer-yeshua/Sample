@@ -1,0 +1,9 @@
+[db-blog-prod-virt.belugacdn.com]
+description = "db-blog-prod-virt.belugacdn.com"
+conninfo = host=<%=@pgserver%> user=<%=@backupuser%> password=<%=@backuppass%> dbname=postgres
+ssh_command = ssh postgres@<%=@pgserver%>
+backup_method = rsync
+parallel_jobs = 1
+reuse_backup = link
+archiver = on
+retention_policy = RECOVERY WINDOW OF 2 WEEKS

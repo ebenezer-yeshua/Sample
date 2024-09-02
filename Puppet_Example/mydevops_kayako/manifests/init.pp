@@ -1,0 +1,3 @@
+class mydevops_kayako {
+
+}

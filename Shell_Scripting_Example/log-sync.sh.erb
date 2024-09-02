@@ -1,0 +1,3 @@
+#!/bin/bash
+rclone copy -P  /home/sites/accounts.mydevops.com/log/ --include '*.gz' blog-log-backup:blog-backup/<%= @fqdn %>/logs/ &> /root/backup-logs
+

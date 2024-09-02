@@ -1,0 +1,54 @@
+{
+  "version": 3,
+  "partitions": [
+    {
+      "partition": "aws-us-gov",
+      "partitionName": "AWS GovCloud (US)",
+      "dnsSuffix": "",
+      "regionRegex": "^us\\-gov\\-\\w+\\-\\d+$",
+      "defaults": {
+        "hostname": "{service}.{region}.{dnsSuffix}",
+        "protocols": [
+          "https"
+        ],
+        "signatureVersions": [
+          "v4"
+        ]
+      },
+      "regions": {
+        "us-gov-west-1": {
+          "description": "AWS GovCloud (US)"
+        }
+      },
+      "services": {
+        "autoscaling": {
+          "endpoints": {
+            "us-gov-west-1": {
+              "protocols": [
+                "http",
+                "https"
+              ]
+            }
+          }
+        },
+        "s3": {
+          "defaults": {
+            "signatureVersions": [
+              "s3",
+              "s3v4"
+            ]
+        },
+        "endpoints": {
+            "us-gov-west-1": {
+              "protocols": [
+                "http",
+                "https"
+              ],
+              "hostname": "ewr1.mydevops.com"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

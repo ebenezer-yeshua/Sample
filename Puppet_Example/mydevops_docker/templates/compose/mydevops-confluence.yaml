@@ -1,0 +1,47 @@
+version: "3.7"
+
+services:
+  confluence:
+    image: atlassian/confluence-server:7.0.1-ubuntu-18.04-adoptopenjdk8
+    container_name: confluence
+    environment:
+      JVM_MINIMUM_MEMORY: 3076m
+      JVM_MAXIMUM_MEMORY: 6144m
+      JVM_RESERVED_CODE_CACHE_SIZE: 768m
+      ATL_AUTOLOGIN_COOKIE_AGE: 604800
+      ATL_LICENSE_KEY: ******
+      ATL_PROXY_NAME: confluence.mydevops.com
+      ATL_PROXY_PORT: 443
+      ATL_TOMCAT_SCHEME: https
+      ATL_DB_TYPE: mysql
+      ATL_JDBC_USER: asloconfluence
+      ATL_JDBC_PASSWORD: *****
+      ATL_JDBC_URL: jdbc:mysql://10.0.1.138:3306/asloconfluence?useSSL=false
+      CATALINA_OPTS: "-Datlassian.http.socket.timeout=60000 -Dplugin.jira-integration.remote.timeout.connection=60000 -Dplugin.jira-integration.remote.timeout.socket=60000 -Datlassian.http.connection.timeout=60000 -Dhttp.socket.timeout=60000"
+    volumes:
+      - /stacks/confluence/var:/var/atlassian/application-data/confluence
+#      - /stacks/confluence/lib/jmxContent.xml:/opt/atlassian/confluence/confluence/WEB-INF/classes/jmxContent.xml
+#      -  /stacks/confluence/lib/mysql-connector-java-8.0.29.jar:/opt/atlassian/confluence/confluence/WEB-INF/lib/mysql-connector-java-8.0.29.jar
+      - /stacks/confluence/lib/mysql-connector-java-5.1.49.jar:/opt/atlassian/confluence/confluence/WEB-INF/lib/mysql-connector-java-5.1.49.jar
+#      - /stacks/confluence/lib/mysql-connector-java-5.1.49-bin.jar:/opt/atlassian/confluence/confluence/WEB-INF/lib/mysql-connector-java-5.1.49-bin.jar
+    healthcheck:
+      test: [ "CMD", "curl", "-sqo", "/dev/null", "localhost:8090" ]
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 190s
+    ports:
+      - 10.165.15.142:8090:8090
+      - 10.165.15.142:8000:8000
+      - 127.0.0.1:8090:8090
+      - 127.0.0.1:8000:8000
+    networks:
+      default:
+        ipv4_address: 10.0.1.4
+    restart: unless-stopped
+
+networks:
+  default:
+    external: true
+    attachable: true
+    name: confluence

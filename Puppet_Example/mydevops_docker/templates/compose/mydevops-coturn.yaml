@@ -1,0 +1,15 @@
+version: "3"
+services:
+
+# Coturn
+  coturn:
+    image: coturn/coturn:4.6.2-alpine
+    command: ['--external-ip=$$EXTERNAL_IP','--relay-ip=$$EXTERNAL_IP']
+    restart: always
+    volumes:
+      - /coturn/turnserver.conf:/etc/turnserver.conf:ro
+      - /coturn/privkey.pem:/etc/ssl/private/privkey.pem:ro
+      - /coturn/cert.pem:/etc/ssl/certs/cert.pem:ro
+    network_mode: host
+    env_file:
+      - /coturn/coturn.env

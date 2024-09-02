@@ -1,0 +1,31 @@
+---
+mydevops_kayako::mysql::package_name: 'mariadb-server' 
+mydevops_kayako::mysql::package_ensure: '10.1.41-0+deb9u1'
+mydevops_kayako::mysql::root_password: 'gL3tIyli'
+mydevops_kayako::mysql::service_name: 'mysqld'
+mydevops_kayako::mysql::db:
+  "*":
+    user: "replication"
+    password: "mydevops@123"
+    host: '10.108.49.%'
+    grant:
+      - "REPLICATION SLAVE"
+
+mydevops_kayako::php::settings:
+  'PHP/max_execution_time': '90'
+  'PHP/max_input_time': '300'
+  'PHP/memory_limit': '64M'
+  'PHP/post_max_size': '32M'
+  'PHP/upload_max_filesize': '32M'
+  'Date/date.timezone': 'America/New_York'
+mydevops_kayako::php::extensions:
+   bcmath: {}
+   mysql: {}
+   gd: {}
+   xmlrpc: {}
+   mbstring: {}
+   imap: {}
+   soap: {}
+   xml: {}
+   json: {}
+mydevops_kayako::php::fpm::pools:

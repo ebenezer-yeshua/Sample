@@ -1,0 +1,3 @@
+<%- @pgbouncerusers.each do |user| -%>
+"<%= user["user"] %>" "<%= user["md5"] %>"
+<%- end -%>

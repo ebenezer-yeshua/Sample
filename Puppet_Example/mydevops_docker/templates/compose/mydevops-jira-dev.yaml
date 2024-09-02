@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  jira:
+    image: atlassian/jira-software:8.3.2-jdk11
+    container_name: jira
+    network_mode: bridge
+    environment:
+      JVM_MINIMUM_MEMORY: 3076m
+      JVM_MAXIMUM_MEMORY: 6144m
+      JVM_RESERVED_CODE_CACHE_SIZE: 768m
+      ATL_AUTOLOGIN_COOKIE_AGE: 604800
+      ATL_LICENSE_KEY:
+      ATL_PROXY_NAME: jira-dev.mios.com
+      ATL_PROXY_PORT: 443
+      ATL_TOMCAT_SCHEME: https
+      ATL_DB_TYPE: mysql
+      ATL_DB_SCHEMA_NAME: ezdev_jira
+      ATL_DB_DRIVER: com.mysql.jdbc.Driver
+      ATL_JDBC_USER: mydevops_dev_jira
+      ATL_JDBC_PASSWORD: ****
+      ATL_JDBC_URL: jdbc:mysql://10.165.15.162:3306/mydevops_jira?useSSL=false
+    volumes:
+      - var_jira:/var/atlassian/application-data/jira
+      - /opt/mysql-connector-java-5.1.49.jar:/opt/atlassian/jira/lib/mysql-connector-java-5.1.49.jar
+    healthcheck:
+      test: [ "CMD", "curl", "-sqo", "/dev/null", "localhost:8080" ]
+      interval: 1m
+      timeout: 10s
+      retries: 5
+      start_period: 3600s
+    ports:
+      - 10.165.15.162:8080:8080
+      - 10.165.15.162:8001:8000
+      - 127.0.0.1:8080:8080
+      - 127.0.0.1:8001:8000
+    restart: unless-stopped
+
+volumes:
+  var_jira:

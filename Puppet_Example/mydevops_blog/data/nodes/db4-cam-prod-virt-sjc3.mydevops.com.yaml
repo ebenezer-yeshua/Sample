@@ -1,0 +1,26 @@
+---
+mydevops_blog::cron::job:
+  'pgrepair':  
+    ensure: 'present'
+    command: 'if [ $(ps auxf | grep pgrepair.sh | grep -v grep | wc -l) -eq 0 ]; then /usr/local/bin/pgrepair.sh 1> /dev/null; fi'
+    minute: '###*/15'
+    hour: '*'
+    date: '*'
+    month: '*'
+    weekday: '*'
+    user: postgres
+    environment:
+      - 'MAILTO=infra@lists.mydevops.net'
+      - 'PATH="/usr/bin:/bin:/usr/local/bin"'
+  'pgbackup':  
+    ensure: 'present'
+    command: 'if [ $(ps auxf | grep pgbackup.sh | grep -v grep | wc -l) -eq 0 ]; then /usr/local/bin/pgbackup.sh 1> /dev/null; fi'
+    minute: '30'
+    hour: '6'
+    date: '*'
+    month: '*'
+    weekday: '*'
+    user: postgres
+    environment:
+      - 'MAILTO=infra@lists.mydevops.net'
+      - 'PATH="/usr/bin:/bin:/usr/local/bin"'  

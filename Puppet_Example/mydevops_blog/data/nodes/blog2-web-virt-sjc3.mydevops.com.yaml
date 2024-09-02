@@ -1,0 +1,6 @@
+---
+mydevops_blog::ssh_keys:
+  postgres@db-blog-prod-virt:
+    type: 'ssh-rsa'
+    user: 'sites'
+    key: 'AAAAB3NzaC1yc2EAAAADAQABAAABAQDGU21j3p4p8h6NdE7rMq1YJFplSFtEuTfdYpSIE67ArJhfDWa6ZsE2wrXAkcDU5Gg/ORtxr3VQ3I5iDayD2Jnl2wOVR9IW2RzKm4Srq3EJdcYBviZdMesf8sR50ArVG7YVWPlum+6SIxZQXz3ksv7/BSJ1wgWYKdteVd9hhHFQlREXGoYBWiQO6UbYfjYs/CoJViMQfOjXfAPSz40xCPUxA1U7ZNBzDuYu93GL8T3P3pnmzH2Udiq6nrMl80OKqmKnsa89JdEa2h9HnOmy+1bI9FDPsXkTpCnq/SV****'

@@ -1,0 +1,26 @@
+#!/bin/bash
+set -ex
+export RAILS_ENV=production
+cd /home/sites/accounts.mydevops.com
+/usr/local/rvm/wrappers/ruby-2.6.2@blog5/bundle install --without=development,test
+/usr/bin/yarn install
+/usr/local/rvm/wrappers/ruby-2.6.2@blog5/rails db:migrate
+/usr/local/rvm/wrappers/ruby-2.6.2@blog5/rails assets:precompile
+set +ex
+/usr/bin/passenger-config restart-app /home/sites/accounts.mydevops.com
+while true;do
+	/usr/bin/curl -s -o/dev/null --max-time 10 https://accounts.mydevops.com/login --resolve accounts.mydevops.com:443:$(/opt/puppetlabs/bin/facter ipaddress)
+	rc=$?
+	case "$rc" in
+		0)
+			echo "application loads successfully"
+			/usr/sbin/passenger-status
+			exit 0
+			;;
+		28)
+			echo "application timed out, retrying"
+			/usr/sbin/passenger-status
+			continue
+			;;
+	esac
+done

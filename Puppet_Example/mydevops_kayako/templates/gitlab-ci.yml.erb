@@ -1,0 +1,41 @@
+stages:
+<% if @staging -%>
+    - test
+<% end -%>
+    - deploy
+    
+deploy:
+  stage: deploy
+  image: debian:10
+  environment:
+    name: production
+    url: https://<%=@site%>/
+  only:
+    - master
+  script:
+    - apt-get update
+    - apt-get install rsync openssh-client -y -f
+    - mkdir ~/.ssh 
+    - cp deploy/known_hosts ~/.ssh
+    - chmod 400 "$sshkey"
+<% @servers.each do |server| -%>
+    - rsync -av -e "ssh -i $sshkey" www/ <%=@name%>@<%=server['name']%>:<%=@name%>/
+<% end -%>
+
+<% if @staging -%>
+test:
+  stage: test
+  image: debian:10
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: https://$CI_ENVIRONMENT_SLUG.www-staging.<%=@site%>/
+  script:
+    - apt-get update
+    - apt-get install rsync openssh-client -y -f
+    - mkdir ~/.ssh 
+    - cp deploy/known_hosts ~/.ssh
+    - chmod 400 "$sshkey"
+<% @servers.each do |server| -%>
+    - rsync -av -e "ssh -i $sshkey" www/ <%=@name%>-staging@<%=server['name']%>:<%=@name%>-staging/$CI_ENVIRONMENT_SLUG.www-staging.<%=@site%>/
+<% end -%>
+<% end -%>

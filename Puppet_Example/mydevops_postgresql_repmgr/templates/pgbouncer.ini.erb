@@ -1,0 +1,27 @@
+%include /etc/pgbouncer/pgbouncer.database.ini
+
+[pgbouncer]
+logfile = /var/log/postgresql/pgbouncer.log
+pidfile = /var/run/postgresql/pgbouncer.pid
+
+listen_addr = localhost
+listen_port = <%=@pgbouncerport%>
+
+unix_socket_dir = /var/run/postgresql
+
+auth_type = md5
+auth_file = /etc/pgbouncer/userlist.txt
+
+pool_mode = session
+
+server_reset_query = DISCARD ALL
+
+ignore_startup_parameters = extra_float_digits
+
+max_client_conn = <%=@pgbouncermaxclient%>
+
+default_pool_size = <%=@pgbouncerpoolsize%>
+
+admin_users=pgbouncer
+
+server_connect_timeout = <%=@pgserverconnecttimeout%>
