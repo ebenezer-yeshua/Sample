@@ -44,7 +44,7 @@ module "web_loadbalancer" {
   aws_instance_security_group           = module.web_network.output_security_group
   aws_instance_vpc_id                   = module.web_network.output_vpc_id
   aws_intance_id                        = module.web_instance.output_aws_instance_volume_attach
-  aws_loadbalancer_type                 = "Application"
+  aws_loadbalancer_type                 = "application"
   aws_instance_subnet                   = [module.web_network.output_subnet]
   aws_intance_name                      = var.app_name
 }
